@@ -23,10 +23,11 @@ public class IndempotentRoute extends RouteBuilder {
 		from("file://src/main/resources/?fileName=schemas.txt&noop=true&idempotent=false&delay={{timer.period}}")
 		.split(body().tokenize("\r\n|\n"))
 		.setHeader("SCHEMA", simple("${body.trim()}"))
+		.setHeader("CACHENAME").method(jCacheIdempotentRepository, "getCache.getName")
 		.log("Processing SCHEMA: ${header.SCHEMA}")
 		.to("bean:userService?method=findByNativeQuery(${header.SCHEMA})") // Query the database
 		.split(simple("${body}")) //Split the primary keys.
-		//.to("bean:igniteGetService?method=igniteGet(${header.SCHEMA}::${body}, ${header.CACHENAME})") // (A hack) call get() on Ignite cache to move record from db into cache.
+		.to("bean:igniteGetService?method=igniteGet(${header.SCHEMA}::${body}, ${header.CACHENAME})") // (A hack) call get() on Ignite cache to move record from db into cache.
 		.idempotentConsumer(simple("${header.SCHEMA}::${body}"), jCacheIdempotentRepository)
 		.log("Received message for 'idempotentConsumer'. body: ${body}");
 	}

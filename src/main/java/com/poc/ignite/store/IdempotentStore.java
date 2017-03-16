@@ -14,13 +14,13 @@ import org.apache.ignite.lang.IgniteBiInClosure;
 import org.apache.ignite.resources.SpringResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import com.poc.persistence.Idempotent;
-
+@Component
 public class IdempotentStore extends CacheStoreAdapter<Object,Boolean> {
 	private static final Logger LOG = LoggerFactory.getLogger(IdempotentStore.class);
 
-	@SpringResource(resourceName = "idempotentDataSource")
+	@SpringResource(resourceName = "dataSource")
 	private DataSource dataSource;
 
 	@Override
@@ -31,8 +31,7 @@ public class IdempotentStore extends CacheStoreAdapter<Object,Boolean> {
 				PreparedStatement st = conn.prepareStatement("SELECT * FROM SCHEMA1.IDEMPOTENT");) {
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
-				Idempotent idempotentTest = new Idempotent(rs.getString(1), rs.getInt(2));
-				clo.apply(idempotentTest.getKey(), Boolean.TRUE);
+				clo.apply(rs.getString(1), Boolean.TRUE);
 			}
 		} catch (SQLException e) {
 			throw new CacheLoaderException("Failed to load database records from the Idempotent table.", e);
@@ -45,7 +44,6 @@ public class IdempotentStore extends CacheStoreAdapter<Object,Boolean> {
 
 		try (Connection conn = dataSource.getConnection();
 			PreparedStatement st = conn.prepareStatement("INSERT INTO SCHEMA1.IDEMPOTENT VALUES (?, ?)");) {
-			// IdempotentTest idempotentTest = entry.getValue();
 			st.setString(1, entry.getKey().toString());
 			st.setInt(2, 1);
 			st.executeUpdate();
@@ -59,7 +57,7 @@ public class IdempotentStore extends CacheStoreAdapter<Object,Boolean> {
 		LOG.debug("load() called with key: {}", key);
 
 		try (Connection conn = dataSource.getConnection();
-				PreparedStatement st = conn.prepareStatement("SELECT * FROM SCHEMA1.IDEMPOTENT WHERE \"key\" = ?");) {
+				PreparedStatement st = conn.prepareStatement("SELECT * FROM SCHEMA1.IDEMPOTENT WHERE key = ?");) {
 			st.setString(1, key.toString());
 			ResultSet rs = st.executeQuery();
 

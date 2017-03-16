@@ -26,7 +26,7 @@ public class IdempotentRepositoryConfig {
 
 		IgniteCache<Object,Boolean> igniteCache = ignite.cache("idempotentRepositoryCache");
 
-		igniteCache.loadCache(null);
+		//igniteCache.loadCache(null);
 
 		JCacheIdempotentRepository jcacheIdempotentRepository = new JCacheIdempotentRepository();
 

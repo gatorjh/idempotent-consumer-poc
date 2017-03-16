@@ -6,11 +6,35 @@
        http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean class="org.springframework.jdbc.datasource.DriverManagerDataSource"
-		id="idempotentDataSource">
-		<property name="url" value="jdbc:h2:mem:mydb"></property>
-		<property name="username" value="sa"></property>
-		<property name="password" value=""></property>
+	<bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
+		<property name="poolName" value="springHikariCP" />
+		<property name="jdbcUrl" value="${spring.datasource.url}" />
+		<property name="maximumPoolSize" value="${spring.datasource.hikari.maximum-pool-size}" />
+		<property name="idleTimeout" value="${spring.datasource.hikari.idle-timeout}" />
+		<property name="registerMbeans" value="${spring.datasource.hikari.register-mbeans}" />
+
+		<property name="dataSourceProperties">
+			<props>
+				<prop key="clientProgramName">${spring.datasource.hikari.data-source-properties.clientProgramName}</prop>
+				<prop key="user">${spring.datasource.username}</prop>
+				<prop key="password">${spring.datasource.password}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- HikariCP configuration -->
+	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource"
+		destroy-method="close">
+		<constructor-arg ref="hikariConfig" />
+	</bean>
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:application.properties</value>
+			</list>
+		</property>
 	</bean>
 
 	<bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
@@ -52,7 +76,8 @@
 					<property name="writeThrough" value="true"></property>
 					<!-- Set cacheStoreFactory -->
 					<property name="cacheStoreFactory">
-						<bean class="javax.cache.configuration.FactoryBuilder" factory-method="factoryOf">
+						<bean class="javax.cache.configuration.FactoryBuilder"
+							factory-method="factoryOf">
 							<constructor-arg value="com.poc.ignite.store.IdempotentStore"></constructor-arg>
 						</bean>
 					</property>
@@ -60,8 +85,7 @@
 						<list>
 							<bean class="org.apache.ignite.cache.QueryEntity">
 								<property name="keyType" value="java.lang.String"></property>
-								<property name="valueType"
-									value="com.poc.persistence.Idempotent"></property>
+								<property name="valueType" value="com.poc.persistence.Idempotent"></property>
 								<property name="fields">
 									<map>
 										<entry key="key" value="java.lang.String"></entry>
