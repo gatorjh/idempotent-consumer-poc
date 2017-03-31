@@ -7,6 +7,10 @@ CREATE TABLE User (
   name VARCHAR(30),
   email  VARCHAR(50)
 );
+CREATE TABLE IdempotentBlob (
+  key BLOB,
+  value  BOOLEAN
+);
 CREATE TABLE Idempotent (
   key VARCHAR(30),
   value  BOOLEAN

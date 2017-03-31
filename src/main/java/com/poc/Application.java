@@ -29,15 +29,10 @@ public class Application {
 	@Bean
 	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
 		return args -> {
-
-			Connection conn = dataSource.getConnection();
-			LOG.info("isClosed {}", conn.isClosed());
 			Properties props = dataSource.getDataSourceProperties();
 			for(Entry<Object,Object> prop : props.entrySet()) {
 				LOG.info(prop.getKey() + " " + prop.getValue());
 			}
-			//LOG.info(dataSource.getDataSourceProperties());
-
 		};
 	}
 }

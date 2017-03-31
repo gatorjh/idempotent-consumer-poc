@@ -6,7 +6,6 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.apache.ignite.resources.SpringResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ public class UserService {
 
 	@Autowired
 	@Qualifier("entityManagerFactory")
-	@SpringResource(resourceName = "entityManagerFactory")
 	LocalContainerEntityManagerFactoryBean entityManagerFactory;
 
 	@SuppressWarnings("unchecked")
